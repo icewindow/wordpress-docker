@@ -8,14 +8,14 @@ configured not to be writable by web server. All necessary file-level changes mu
 extending this image (see example below). This allows better maintenance, versioning, rollbacks and
 horizontal scaling possibility. Also, it improves Wordpress security by reducing the attack surface.
 
-This image is automatically build and published on Docker Hub:
+~~This image is automatically build and published on Docker Hub:~~
 https://hub.docker.com/r/wigwam/wordpress/
 
 
 How it works
 ------------
 
-This image is based on `debian:stretch` base image and has Apache, PHP and all Wordpress
+This image is based on `debian:bookworm` base image and has Apache, PHP and all Wordpress
 dependencies installed from Debian repositories. Wordpress is downloaded and extracted into
 `/var/www/wordpress` directory. Apache is configured to use this path as document root. Files
 in document root are not writable by web server, so "Install/Update plugin/theme" functionality
