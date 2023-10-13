@@ -23,6 +23,29 @@ file_env() {
 	unset "$fileVar"
 }
 
+# see http://stackoverflow.com/a/2705678/433558
+sed_escape_lhs() {
+  echo "$@" | sed -e 's/[]\/$*.^|[]/\\&/g'
+}
+sed_escape_rhs() {
+  echo "$@" | sed -e 's/[\/&]/\\&/g'
+}
+php_escape() {
+  php -r 'var_export(('$2') $argv[1]);' -- "$1"
+}
+set_config() {
+  key="$1"
+  value="$2"
+  var_type="${3:-string}"
+  start="(['\"])$(sed_escape_lhs "$key")\2\s*,"
+  end="\);"
+  if [ "${key:0:1}" = '$' ]; then
+    start="^(\s*)$(sed_escape_lhs "$key")\s*="
+    end=";"
+  fi
+  sed -ri -e "s/($start\s*).*($end)$/\1$(sed_escape_rhs "$(php_escape "$value" "$var_type")")\3/" wp-config.php
+}
+
 if [[ "$1" == apache2* ]]; then
     : "${APACHE_SERVER_NAME:=wordpress.local}"
     : "${APACHE_WP_ADMIN_ALLOW_FROM:=all granted}"
@@ -80,6 +103,19 @@ define('DISALLOW_FILE_EDIT', true);
 EOPHP
   fi
 
+  for unique in "${uniqueEnvs[@]}"; do
+    uniqVar="WORDPRESS_$unique"
+    if [ -n "${!uniqVar}" ]; then
+      set_config "$unique" "${!uniqVar}"
+    else
+      # if not specified, let's generate a random value
+      currentVal="$(sed -rn -e "s/define\(\s*[\'\"]$unique[\'\"]\s*,\s*[\'\"](.*)[\'\"]\s*\);/\1/p" wp-config.php)"
+      if [ "$currentVal" = 'put your unique phrase here' ]; then
+        set_config "$unique" "$(head -c1m /dev/urandom | sha1sum | cut -d' ' -f1)"
+      fi
+    fi
+  done
+
 	# only touch "wp-config.php" if we have environment-supplied configuration values
 	if [ "$haveConfig" ]; then
 		: "${WORDPRESS_DB_HOST:=mysql}"
@@ -87,46 +123,10 @@ EOPHP
 		: "${WORDPRESS_DB_PASSWORD:=}"
 		: "${WORDPRESS_DB_NAME:=wordpress}"
 
-		# see http://stackoverflow.com/a/2705678/433558
-		sed_escape_lhs() {
-			echo "$@" | sed -e 's/[]\/$*.^|[]/\\&/g'
-		}
-		sed_escape_rhs() {
-			echo "$@" | sed -e 's/[\/&]/\\&/g'
-		}
-		php_escape() {
-			php -r 'var_export(('$2') $argv[1]);' -- "$1"
-		}
-		set_config() {
-			key="$1"
-			value="$2"
-			var_type="${3:-string}"
-			start="(['\"])$(sed_escape_lhs "$key")\2\s*,"
-			end="\);"
-			if [ "${key:0:1}" = '$' ]; then
-				start="^(\s*)$(sed_escape_lhs "$key")\s*="
-				end=";"
-			fi
-			sed -ri -e "s/($start\s*).*($end)$/\1$(sed_escape_rhs "$(php_escape "$value" "$var_type")")\3/" wp-config.php
-		}
-
 		set_config 'DB_HOST' "$WORDPRESS_DB_HOST"
 		set_config 'DB_USER' "$WORDPRESS_DB_USER"
 		set_config 'DB_PASSWORD' "$WORDPRESS_DB_PASSWORD"
 		set_config 'DB_NAME' "$WORDPRESS_DB_NAME"
-
-		for unique in "${uniqueEnvs[@]}"; do
-			uniqVar="WORDPRESS_$unique"
-			if [ -n "${!uniqVar}" ]; then
-				set_config "$unique" "${!uniqVar}"
-			else
-				# if not specified, let's generate a random value
-				currentVal="$(sed -rn -e "s/define\((([\'\"])$unique\2\s*,\s*)(['\"])(.*)\3\);/\4/p" wp-config.php)"
-				if [ "$currentVal" = 'put your unique phrase here' ]; then
-					set_config "$unique" "$(head -c1m /dev/urandom | sha1sum | cut -d' ' -f1)"
-				fi
-			fi
-		done
 
 		if [ "$WORDPRESS_TABLE_PREFIX" ]; then
 			set_config '$table_prefix' "$WORDPRESS_TABLE_PREFIX"
