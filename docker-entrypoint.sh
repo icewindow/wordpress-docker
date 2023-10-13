@@ -61,20 +61,13 @@ if [[ "$1" == apache2* ]]; then
 		fi
 	done
 
-	# only touch "wp-config.php" if we have environment-supplied configuration values
-	if [ "$haveConfig" ]; then
-		: "${WORDPRESS_DB_HOST:=mysql}"
-		: "${WORDPRESS_DB_USER:=root}"
-		: "${WORDPRESS_DB_PASSWORD:=}"
-		: "${WORDPRESS_DB_NAME:=wordpress}"
+  # version 4.4.1 decided to switch to windows line endings, that breaks our seds and awks
+  # https://github.com/docker-library/wordpress/issues/116
+  # https://github.com/WordPress/WordPress/commit/1acedc542fba2482bab88ec70d4bea4b997a92e4
+  sed -ri -e 's/\r$//' wp-config*
 
-		# version 4.4.1 decided to switch to windows line endings, that breaks our seds and awks
-		# https://github.com/docker-library/wordpress/issues/116
-		# https://github.com/WordPress/WordPress/commit/1acedc542fba2482bab88ec70d4bea4b997a92e4
-		sed -ri -e 's/\r$//' wp-config*
-
-		if [ ! -e wp-config.php ]; then
-			awk '/^\/\*.*stop editing.*\*\/$/ && c == 0 { c = 1; system("cat") } { print }' wp-config-sample.php > wp-config.php <<'EOPHP'
+  if [ ! -e wp-config.php ]; then
+    awk '/^\/\*.*stop editing.*\*\/$/ && c == 0 { c = 1; system("cat") } { print }' wp-config-sample.php > wp-config.php <<'EOPHP'
 // If we're behind a proxy server and using HTTPS, we need to alert Wordpress of that fact
 // see also http://codex.wordpress.org/Administration_Over_SSL#Using_a_Reverse_Proxy
 if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROTO'] === 'https') {
@@ -85,7 +78,14 @@ if (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && $_SERVER['HTTP_X_FORWARDED_PROT
 define('DISALLOW_FILE_MODS', true);
 define('DISALLOW_FILE_EDIT', true);
 EOPHP
-		fi
+  fi
+
+	# only touch "wp-config.php" if we have environment-supplied configuration values
+	if [ "$haveConfig" ]; then
+		: "${WORDPRESS_DB_HOST:=mysql}"
+		: "${WORDPRESS_DB_USER:=root}"
+		: "${WORDPRESS_DB_PASSWORD:=}"
+		: "${WORDPRESS_DB_NAME:=wordpress}"
 
 		# see http://stackoverflow.com/a/2705678/433558
 		sed_escape_lhs() {
