@@ -23,7 +23,7 @@ fi
 
 echo "Downloading $type ..."
 tmpfile=`mktemp`
-curl -s $download_url > $tmpfile
+curl -sL $download_url > $tmpfile
 
 echo "Unpacking $type ..."
 unzip -qq -d "$WORDPRESS_ROOT_DIR/wp-content/${type}s" $tmpfile
