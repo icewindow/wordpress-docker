@@ -2,11 +2,11 @@ FROM debian:bookworm
 
 
 # Install Apache2 + PHP 8.2
-ENV DEBIAN_FRONTEND noninteractive
+ARG DEBIAN_FRONTEND=noninteractive
 RUN set -ex; \
     apt-get update; \
     apt-get install -y apache2 libapache2-mod-php8.2 php8.2-gd php8.2-mysql \
-                       php8.2-opcache php8.2-cli curl jq unzip; \
+                       php8.2-opcache php8.2-cli php8.2-xml curl jq unzip; \
     apt-get clean; \
     rm -rf /var/lib/apt/lists/*; \
     a2enmod rewrite expires; \
@@ -41,6 +41,10 @@ COPY opcache-recommended.ini /etc/php/8.2/apache2/conf.d/
 COPY docker-entrypoint.sh /usr/local/bin/
 
 
+# Install common plugins
+ARG PLUGIN_LIST="better-wp-security contact-form-7 cookie-law-info mailpoet matomo post-smtp wordpress-seo"
 WORKDIR /var/www/wordpress
+RUN for plugin in $PLUGIN_LIST; do wp-install.sh plugin $plugin; done
+
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["apache2-foreground"]
