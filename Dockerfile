@@ -36,15 +36,14 @@ COPY apache2-foreground /usr/local/bin/
 COPY wordpress.conf /etc/apache2/sites-available/
 COPY opcache-recommended.ini /etc/php/8.2/apache2/conf.d/
 
-
 # Configure apache/wordpress settings on the first run
 COPY docker-entrypoint.sh /usr/local/bin/
 
-
-# Install common plugins
-ARG PLUGIN_LIST="better-wp-security contact-form-7 cookie-law-info mailpoet matomo post-smtp wordpress-seo"
+# Remove default plugins
 WORKDIR /var/www/wordpress
-RUN for plugin in $PLUGIN_LIST; do wp-install.sh plugin $plugin; done
+RUN cd /var/www/wordpress/wp-content/plugins/; \
+    rm -r akismet; \
+    rm hello.php
 
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["apache2-foreground"]
