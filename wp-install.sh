@@ -30,4 +30,6 @@ unzip -qq -d "$WORDPRESS_ROOT_DIR/wp-content/${type}s" $tmpfile
 rm $tmpfile
 chown -R nobody:nogroup "$WORDPRESS_ROOT_DIR/wp-content/${type}s/$slug"
 
+wp-locale.sh $type $slug
+
 echo "$type '$slug' successfully installed."

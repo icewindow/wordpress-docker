@@ -28,8 +28,9 @@ RUN set -ex; \
 
 VOLUME /var/www/wordpress/wp-content/uploads
 
-# Add a themes/plugins installation wrapper script
+# Add a themes/plugins installation wrapper scripts
 COPY wp-install.sh /usr/local/bin/
+COPY wp-locale.sh /usl/local/bin/
 
 # Configure Apache, PHP and Wordpress
 COPY apache2-foreground /usr/local/bin/
@@ -38,6 +39,10 @@ COPY opcache-recommended.ini /etc/php/8.2/apache2/conf.d/
 
 # Configure apache/wordpress settings on the first run
 COPY docker-entrypoint.sh /usr/local/bin/
+
+# Set locales available by default.
+ENV WORDPRESS_LOCALES en_US
+RUN wp-local.sh core
 
 # Remove default plugins
 WORKDIR /var/www/wordpress
