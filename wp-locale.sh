@@ -11,7 +11,7 @@ if [ "$WORDPRESS_LOCALES" == "" ]; then
 fi
 
 if [[ (( "$1" != "plugin" || "$1" != "theme" ) && "$#" -ne 2) && "$1" != "core"  ]]; then
-	echo "USAGE: $0 (plugin|theme) <slug> "
+	echo "USAGE: $0 (plugin|theme) <slug> | $0 core"
 	exit 1
 fi
 
@@ -26,7 +26,7 @@ if [ "$type" != "core" ]; then
 fi
 
 echo "Downloading $1 language files..."
-translation_json=`curl -s -X POST "https://api.wordpress.org/translations/${type}/1.0/" -H 'Content-Type: multipart/form-data' -d "wp_version=${WORDPRESS_VERSION}$slug_param"`
+translation_json=`curl -s -X POST "https://api.wordpress.org/translations/${type}/1.0/" -d "wp_version=${WORDPRESS_VERSION}$slug_param"`
 
 for lang in $WORDPRESS_LOCALES
 do
