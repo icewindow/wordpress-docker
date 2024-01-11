@@ -42,7 +42,7 @@ COPY docker-entrypoint.sh /usr/local/bin/
 
 # Set locales available by default.
 ENV WORDPRESS_LOCALES en_US
-RUN wp-local.sh core
+RUN wp-locale.sh core
 
 # Remove default plugins
 WORKDIR /var/www/wordpress
