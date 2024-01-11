@@ -30,7 +30,7 @@ VOLUME /var/www/wordpress/wp-content/uploads
 
 # Add a themes/plugins installation wrapper scripts
 COPY wp-install.sh /usr/local/bin/
-COPY wp-locale.sh /usl/local/bin/
+COPY wp-locale.sh /usr/local/bin/
 
 # Configure Apache, PHP and Wordpress
 COPY apache2-foreground /usr/local/bin/
