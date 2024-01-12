@@ -10,7 +10,12 @@ if [ "$WORDPRESS_LOCALES" == "" ]; then
   exit 1
 fi
 
-if [[ (( "$1" != "plugin" || "$1" != "theme" ) && "$#" -ne 2) && "$1" != "core"  ]]; then
+if [[
+  "$#" -eq 0 ||
+  "$#" -gt 2 ||
+  (( "$#" -eq 1 ) && ( "$1" != "core" )) ||
+  (( "$#" -eq 2 ) && ( "$1" != "plugin" && "$1" != "theme" ))
+]]; then
 	echo "USAGE: $0 (plugin|theme) <slug> | $0 core"
 	exit 1
 fi
