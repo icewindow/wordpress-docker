@@ -25,6 +25,11 @@ if [ "$type" != "core" ]; then
   LANGUAGE_DIR="$LANGUAGE_DIR/$type"
 fi
 
+if [ ! -d "$LANGUAGE_DIR" ]; then
+  echo "Language directory does not exist, creating it..."
+  mkdir -p "$LANGUAGE_DIR"
+fi
+
 echo "Downloading $1 language files..."
 translation_json=`curl -s -X POST "https://api.wordpress.org/translations/${type}/1.0/" -d "wp_version=${WORDPRESS_VERSION}$slug_param"`
 
