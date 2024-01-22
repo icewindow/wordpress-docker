@@ -5,8 +5,9 @@ FROM debian:bookworm
 ARG DEBIAN_FRONTEND=noninteractive
 RUN set -ex; \
     apt-get update; \
-    apt-get install -y apache2 libapache2-mod-php8.2 php8.2-gd php8.2-mysql \
-                       php8.2-opcache php8.2-cli php8.2-xml curl jq unzip; \
+    apt-get install -y apache2 libapache2-mod-php8.2 \
+                       php8.2-{curl,gd,igbinary,intl,mbstring,mysql,opcache,cli,xml,zip} \
+                       curl jq unzip; \
     apt-get clean; \
     rm -rf /var/lib/apt/lists/*; \
     a2enmod rewrite expires; \
