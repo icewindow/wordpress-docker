@@ -5,8 +5,8 @@ FROM debian:bookworm
 ARG DEBIAN_FRONTEND=noninteractive
 RUN set -ex; \
     apt-get update; \
-    apt-get install -y apache2 libapache2-mod-php8.2 \
-                       php8.2-{curl,gd,igbinary,intl,mbstring,mysql,opcache,cli,xml,zip} \
+    apt-get install -y apache2 libapache2-mod-php8.2 php8.2-cli php8.2-curl php8.2-gd php8.2-igbinary \
+                       php8.2-intl php8.2-mbstring php8.2-mysql php8.2-opcache php8.2-xml php8.2-zip \
                        curl jq unzip; \
     apt-get clean; \
     rm -rf /var/lib/apt/lists/*; \
