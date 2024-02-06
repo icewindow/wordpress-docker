@@ -136,16 +136,33 @@ EOPHP
 			set_config 'WP_DEBUG' 1 boolean
 		fi
 
+  fi
+
+  # Ensure the Wordpress uploads/ volume is apache-writable
+  chgrp www-data /var/www/wordpress/wp-content/uploads
+  chmod 775 /var/www/wordpress/wp-content/uploads
+
+  # now that we're definitely done writing configuration, let's clear out the relevant environment variables (so that stray "phpinfo()" calls don't leak secrets from our code)
+  for e in "${envs[@]}"; do
+      unset "$e"
+  done
+
+  # Now we're done configuring WordPress, let's configure PHP if required
+  if [ -n "${PHP_POST_MAX_SIZE}${PHP_UPLOAD_MAX_FILESIZE}" ]; then
+    MEMORY_CONFIG="/etc/php/8.2/apache2/conf.d/90_memory_limit.ini"
+
+    echo "[PHP]" > $MEMORY_CONFIG
+
+    if [ -n "$PHP_POST_MAX_SIZE" ]; then
+      echo "post_max_size = $PHP_POST_MAX_SIZE" >> $MEMORY_CONFIG
+      unset PHP_POST_MAX_SIZE
     fi
 
-    # Ensure the Wordpress uploads/ volume is apache-writable
-    chgrp www-data /var/www/wordpress/wp-content/uploads
-    chmod 775 /var/www/wordpress/wp-content/uploads
-        
-    # now that we're definitely done writing configuration, let's clear out the relevant envrionment variables (so that stray "phpinfo()" calls don't leak secrets from our code)
-    for e in "${envs[@]}"; do
-        unset "$e"
-    done
+    if [ -n "$PHP_UPLOAD_MAX_FILESIZE" ]; then
+      echo "upload_max_filesize = $PHP_UPLOAD_MAX_FILESIZE" >> $MEMORY_CONFIG
+      unset PHP_UPLOAD_MAX_FILESIZE
+    fi
+  fi
 fi
 
 exec "$@"
