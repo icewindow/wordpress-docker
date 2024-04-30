@@ -17,8 +17,9 @@ RUN set -ex; \
 
 
 # Install Wordpress
-ENV WORDPRESS_VERSION 6.4.3
-ENV WORDPRESS_SHA1 ee3bc3a73ab3cfa535c46f111eb641b3467fa44e
+ARG WORDPRESS_VERSION=6.5.2
+ARG WORDPRESS_SHA1=b70701b5426891ca1f8ff9b3cd96653e2b60d7e9
+ENV WORDPRESS_VERSION=$WORDPRESS_VERSION
 
 RUN set -ex; \
 	curl -o wordpress.tar.gz -fSL "https://wordpress.org/wordpress-${WORDPRESS_VERSION}.tar.gz"; \
